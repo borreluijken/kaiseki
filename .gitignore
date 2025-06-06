@@ -1,0 +1,4 @@
+.venv
+data
+!kanji_freq.csv
+!vocab_freq.csv
