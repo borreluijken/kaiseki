@@ -4,10 +4,8 @@ module docstring
 
 
 from collections import defaultdict
-import heapq
 import math
-import re
-import statistics
+# import statistics
 
 from sudachipy import Dictionary, SplitMode
 
@@ -100,22 +98,18 @@ class Analyzer():
 
     def _calc_percentile_vocab_freq(self, percentile):
         """TODO: docstring"""
-        #freq_values = list(self.vocab_global_freq.values())
-        #index = math.ceil(len(freq_values) * percentile / 100) - 1
-        #return freq_values[index]
-        n = math.ceil(len(self.vocab_global_freq) * percentile / 100)
-        return heapq.nlargest(n, self.vocab_global_freq.values())[-1]
+        freq_values = list(self.vocab_global_freq.values())
+        index = math.ceil(len(freq_values) * percentile / 100) - 1
+        return freq_values[index]
     
 
     def _calc_percentile_kanji_freq(self, percentile):
         """TODO: docstring"""
         if self.kanji_count == 0:
             return 0
-        #freq_values = list(self.kanji_global_freq.values())
-        #index = math.ceil(len(freq_values) * percentile / 100) - 1
-        #return freq_values[index]
-        n = math.ceil(len(self.kanji_global_freq) * percentile / 100)
-        return heapq.nlargest(n, self.kanji_global_freq.values())[-1]
+        freq_values = list(self.kanji_global_freq.values())
+        index = math.ceil(len(freq_values) * percentile / 100) - 1
+        return freq_values[index]
 
 
     def _calc_difficulty(self):
@@ -148,25 +142,4 @@ class Analyzer():
         print(f"{"Average sentence length":24} {self.avg_sentence_len:>10,}")
         print(f"{"Kanji density":24} {self.kanji_density:>10.0%}")
         print(f"{"Difficulty":24} {self.difficulty:>10,}")
-
-
-# DEBUG START
-from pathlib import Path
-base_dir = Path(__file__).resolve().parent.parent
-FSN = base_dir / 'data' / 'vnscripts' / 'fate stay night.txt'
-AOZORA = base_dir / 'data' / 'aozora'
-MANUAL = base_dir / 'data' / 'manual'
-LIGHTNOVELS = base_dir / 'data' / 'light_novels'
-VNSCRIPTS = base_dir / 'data' / 'vnscripts'
-VNSCRIPTS_CORE = base_dir / 'data' / 'vnscripts_core'
-VOCAB_FREQ_CSV = base_dir / 'data' / 'vocab_freq.csv'
-
-# fsn = Analyzer(FSN)
-# fsn.display_stats()
-
-for i in VNSCRIPTS_CORE.iterdir():
-    print(i.name)
-    Analyzer(i).display_stats()
-    print("")
-# DEBUG END
 

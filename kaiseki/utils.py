@@ -8,13 +8,12 @@ import re
 
 from bs4 import BeautifulSoup
 import ebooklib
-from ebooklib import epub
-from pathlib import Path  # DEBUG
+from pathlib import Path
 
 
-base_dir = Path(__file__).resolve().parent.parent
-VOCAB_FREQ_CSV = base_dir / 'data' / 'vocab_freq.csv'
-KANJI_FREQ_CSV = base_dir / 'data' / 'kanji_freq.csv'
+BASE_DIR = Path(__file__).resolve().parent.parent
+VOCAB_FREQ_CSV = BASE_DIR / 'data' / 'vocab_freq.csv'
+KANJI_FREQ_CSV = BASE_DIR / 'data' / 'kanji_freq.csv'
 
 
 vocab_freq_dict = None
@@ -78,7 +77,7 @@ def split(line):
 # TODO: check if this is working correctly
 def epub_to_string(path):
     """Extracts and returns all text from an .epub file as a string."""
-    book = epub.read_epub(path)
+    book = ebooklib.epub.read_epub(path)
     texts = []
     for item in book.get_items():
         if item.get_type() == ebooklib.ITEM_DOCUMENT:
