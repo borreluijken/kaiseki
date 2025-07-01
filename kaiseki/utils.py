@@ -8,6 +8,7 @@ import re
 
 from bs4 import BeautifulSoup
 import ebooklib
+from ebooklib import epub
 from pathlib import Path
 
 
@@ -48,6 +49,10 @@ def filter_japanese(string):
     return ''.join(japanese_re.findall(string))
 
 
+def remove_furigana(string):
+    return re.sub(r'《.*?》', '《》', string)
+
+
 def is_kanji(char):
     """Determines whether a character is kanji or not."""
     return bool(re.search(r'[\u4E00-\u9FFF]', char))
@@ -69,15 +74,9 @@ def get_kanji_freq(kanji):
     return kanji_freq_dict.get(kanji, 5526)
 
 
-def split(line):
-    """Splits a line into sentences."""
-    return line.translate({'。':'\n','！':'\n','？':'\n','―':'\n'}).split('\n')
-
-
-# TODO: check if this is working correctly
 def epub_to_string(path):
     """Extracts and returns all text from an .epub file as a string."""
-    book = ebooklib.epub.read_epub(path)
+    book = epub.read_epub(path)
     texts = []
     for item in book.get_items():
         if item.get_type() == ebooklib.ITEM_DOCUMENT:

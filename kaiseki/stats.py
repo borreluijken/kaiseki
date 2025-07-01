@@ -5,7 +5,7 @@ module docstring
 
 from collections import defaultdict
 import math
-# import statistics
+import re
 
 from sudachipy import Dictionary, SplitMode
 
@@ -33,12 +33,9 @@ class Analyzer():
         self.unique_vocab_once = 0
         self.unique_kanji = 0
         self.unique_kanji_once = 0
-        #self.avg_vocab_freq = 0
-        #self.p90_vocab_freq = 0
         self.p90_kanji_freq = 0
         self.avg_sentence_len = 0
         self.kanji_density = 0
-        self.difficulty = 0
 
         self._tokenizer = Dictionary().create()
         self._analyze_file(path)
@@ -47,13 +44,12 @@ class Analyzer():
 
     def _analyze_file(self, path):
         """TODO: docstring"""
-        for line in utils.file_to_string(path).splitlines():
-            for sentence in utils.split(line):
-                sentence = utils.filter_japanese(sentence)
-                if sentence == '':
-                    continue
+        for sentence in re.split(r'[。！？「」『』«»〔〕\n]+', utils.file_to_string(path)):
+            sentence = utils.remove_furigana(sentence)
+            sentence = utils.filter_japanese(sentence)
+            if sentence != '':
                 self._analyze_sentence(sentence)
-    
+
 
     def _analyze_sentence(self, sentence):
         """TODO: docstring"""
@@ -83,8 +79,6 @@ class Analyzer():
         self.unique_kanji = len(self.kanji_chrono)
         self.unique_vocab_once = sum(1 for v in self.vocab_chrono.values() if v == 1)
         self.unique_kanji_once = sum(1 for k in self.kanji_chrono.values() if k == 1)
-        #self.avg_vocab_freq = round(sum(utils.get_vocab_freq(v) for v in self.vocab_chrono) / self.unique_vocab)
-        #self.p90_vocab_freq = self._calc_percentile_vocab_freq(90)
         self.p90_kanji_freq = self._calc_percentile_kanji_freq(90)
         self.avg_sentence_len = round(self.char_count / self.sentence_count, 1)
         self.kanji_density = round(self.kanji_count / self.char_count, 2)
@@ -112,20 +106,6 @@ class Analyzer():
         return freq_values[index]
 
 
-    def _calc_difficulty(self):
-        """TODO: docstring"""
-        def f(x):
-            res = -(0.00168 * x - 4)
-            res = 1 + math.exp(res)
-            return 10.272 / res
-
-        return round(max(f(self.p90_kanji_freq), 1), 1)
-        # s = max(1, 0.7339 + 0.2094 * self.avg_sentence_len)
-        # v = max(1, 0.00023 * self.avg_vocab_freq)
-        # k = max(1, -2.586 + 30.62 * self.kanji_density)
-        # return round(statistics.geometric_mean([s, v, k]), 1)
-
-
     def display_stats(self):
         """TODO: docstring"""
         print(f"{"Character count":24} {self.char_count:>10,}")
@@ -141,5 +121,3 @@ class Analyzer():
         print(f"{"Top 90% kanji frequency":24} {self.p90_kanji_freq:>10,}")
         print(f"{"Average sentence length":24} {self.avg_sentence_len:>10,}")
         print(f"{"Kanji density":24} {self.kanji_density:>10.0%}")
-        print(f"{"Difficulty":24} {self.difficulty:>10,}")
-
