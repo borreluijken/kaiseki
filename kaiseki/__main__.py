@@ -1,5 +1,5 @@
 import argparse
-from stats import Analyzer
+from .stats import Analyzer
 from pathlib import Path
 
 

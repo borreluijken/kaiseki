@@ -1,5 +1,26 @@
-"""TODO:
-module docstring
+"""Utility functions for Kaiseki.
+
+This module provides functions to load vocabulary and kanji frequency data,
+clean Japanese text, and extract text from .epub and .txt files.
+
+Typical usage example:
+
+  text = filter_japanese("English 日本語 Русский العربية 한국어 हिन्दी")
+  # >> "日本語"
+
+  text = remove_furigana("これは〈振り仮名〉《ふりがな》です")
+  # >> "これは振り仮名です"
+
+  is_kanji('字')
+  # >> True
+
+  freq = get_vocab_freq("言葉")
+  # >> 124
+
+  utils.get_kanji_freq("字")
+  # >> 386
+
+  text = file_to_string("novel.epub")
 """
 
 
@@ -50,7 +71,10 @@ def filter_japanese(string):
 
 
 def remove_furigana(string):
-    return re.sub(r'《.*?》', '《》', string)
+    """Removes furigana from a string."""
+    string = re.sub(r'《.*?》', '', string)
+    string = re.sub(r'[〈〉]', '', string)
+    return string
 
 
 def is_kanji(char):

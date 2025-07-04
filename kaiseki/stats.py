@@ -1,5 +1,30 @@
-"""TODO:
-module docstring
+"""Statistical analysis for Kaiseki.
+
+This module provides the `Analyzer` class, which can be used to extract
+various statistics of Japanese text files (.txt, .epub).
+
+Typical usage example:
+
+  text = Analyzer("path/to/novel.epub")
+
+  text.vocab_count
+  # >> 3235
+
+  text.vocab_local_freq[100:105]  # (vocab, occurrences)
+  # >> [('主君', 4), ('等', 4), ('第', 4), ('夏', 4), ('二', 4)]
+
+  text.display_stats()
+  # >> Character count               4,667
+  #    Word count                    3,235
+  #    Kanji count                   1,861
+  #    Sentence count                  189
+  #    Unique words                    919
+  #    Unique words used once          618
+  #    Unique kanji                    659
+  #    Unique kanji used once          340
+  #    Top 90% kanji frequency       2,260
+  #    Average sentence length        24.7
+  #    Kanji density                   40%
 """
 
 
@@ -9,13 +34,11 @@ import re
 
 from sudachipy import Dictionary, SplitMode
 
-import utils
+from . import utils
 
 
-# TODO: vocab_local_freq stores occ not freq
 class Analyzer():
-    """TODO
-    docstring
+    """Analyzes a Japanese text file to extract various statistics.
     """
 
     def __init__(self, path):
@@ -43,7 +66,7 @@ class Analyzer():
     
 
     def _analyze_file(self, path):
-        """TODO: docstring"""
+        """Analyzes the text file at the given path, extracting sentences and analyzing each one."""
         for sentence in re.split(r'[。！？「」『』«»〔〕\n]+', utils.file_to_string(path)):
             sentence = utils.remove_furigana(sentence)
             sentence = utils.filter_japanese(sentence)
@@ -52,7 +75,7 @@ class Analyzer():
 
 
     def _analyze_sentence(self, sentence):
-        """TODO: docstring"""
+        """Analyzes a single sentence, updating various statistics such as character count,"""
         morphemes = self._tokenizer.tokenize(sentence, SplitMode.A)
         self.char_count += len(sentence)
         self.vocab_count += len(morphemes)
@@ -68,7 +91,7 @@ class Analyzer():
     
 
     def _finalize_stats(self):
-        """TODO: docstring"""
+        """Calculates and finalizes various statistics based on the analyzed text."""
         if self.sentence_count == 0:
             return
         self.vocab_local_freq = self._sort_freq(True, self.vocab_chrono.items())
@@ -82,32 +105,31 @@ class Analyzer():
         self.p90_kanji_freq = self._calc_percentile_kanji_freq(90)
         self.avg_sentence_len = round(self.char_count / self.sentence_count, 1)
         self.kanji_density = round(self.kanji_count / self.char_count, 2)
-        self.difficulty = self._calc_difficulty()
 
 
     def _sort_freq(self, rev, dic):
-        """Returns a version of the dictionary sorted in ascending order of its values."""
-        return dict(sorted(dic, key=lambda item: item[1], reverse=rev))
+        """Returns a list version of the dictionary sorted in ascending order of its values."""
+        return sorted(dic, key=lambda item: item[1], reverse=rev)
 
 
     def _calc_percentile_vocab_freq(self, percentile):
-        """TODO: docstring"""
-        freq_values = list(self.vocab_global_freq.values())
+        """Returns the vocab frequency at the given percentile."""
+        freq_values = [freq for _, freq in self.vocab_global_freq]
         index = math.ceil(len(freq_values) * percentile / 100) - 1
         return freq_values[index]
-    
+
 
     def _calc_percentile_kanji_freq(self, percentile):
-        """TODO: docstring"""
+        """Returns the kanji frequency at the given percentile."""
         if self.kanji_count == 0:
             return 0
-        freq_values = list(self.kanji_global_freq.values())
+        freq_values = [freq for _, freq in self.kanji_global_freq]
         index = math.ceil(len(freq_values) * percentile / 100) - 1
         return freq_values[index]
 
 
     def display_stats(self):
-        """TODO: docstring"""
+        """Displays various statistics of the analyzed text."""
         print(f"{"Character count":24} {self.char_count:>10,}")
         print(f"{"Word count":24} {self.vocab_count:>10,}")
         print(f"{"Kanji count":24} {self.kanji_count:>10,}")
@@ -116,8 +138,6 @@ class Analyzer():
         print(f"{"Unique words used once":24} {self.unique_vocab_once:>10,}")
         print(f"{"Unique kanji":24} {self.unique_kanji:>10,}")
         print(f"{"Unique kanji used once":24} {self.unique_kanji_once:>10,}")
-        #print(f"{"Average word frequency":24} {self.avg_vocab_freq:>10,}")
-        #print(f"{"Top 90% word frequency":24} {self.p90_vocab_freq:>10,}")
         print(f"{"Top 90% kanji frequency":24} {self.p90_kanji_freq:>10,}")
         print(f"{"Average sentence length":24} {self.avg_sentence_len:>10,}")
         print(f"{"Kanji density":24} {self.kanji_density:>10.0%}")
